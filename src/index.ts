@@ -2,6 +2,22 @@ import { McpAgent } from "agents/mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
+const fetchDataFromAPI = async (
+  url: string,
+  headers: Record<string, string>
+) => {
+  const response = await fetch(url, {
+    method: "GET", // You can change this if you need other HTTP methods (e.g., POST)
+    headers: headers, // Add the headers here
+  });
+
+  if (!response.ok) {
+    throw new Error(`API request failed with status ${response.status}`);
+  }
+
+  return await response.json();
+};
+
 // Define our MCP agent with tools
 export class MyMCP extends McpAgent {
 	server = new McpServer({
@@ -17,6 +33,40 @@ export class MyMCP extends McpAgent {
 			async ({ a, b }) => ({
 				content: [{ type: "text", text: String(a + b) }],
 			})
+		);
+
+		this.server.tool(
+			"getKeywordAnalytic",
+			"Get keyword data from protico, please use proticoToken from mcp.json environment variables",
+			{
+				proticoToken: z
+				.string()
+				.describe(
+					"This token should come fron mcp.json environment variable PROTICO_TOKEN"
+				),
+			},
+			async ({ proticoToken }) => {
+				// fetch protico insight
+				try {
+				const headers = {
+					Authorization: `Bearer ${proticoToken}`,
+					"Protico-Agent": "Protico-Access-Token",
+				};
+				const data = await fetchDataFromAPI(
+					"https://main.protico.io/api/keyphrase",
+					headers
+				);
+				return {
+					content: [
+					{ type: "text", text: JSON.stringify(data) }, // Wrap the JSON data as a string
+					],
+				};
+				} catch (error) {
+				return {
+					content: [{ type: "text", text: `Error fetching data: ${error}` }],
+				};
+				}
+			}
 		);
 
 		// Calculator tool with multiple operations
