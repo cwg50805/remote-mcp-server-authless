@@ -48,13 +48,13 @@ export class MyMCP extends McpAgent {
 			async ({ proticoToken }) => {
 				// fetch protico insight
 				try {
-				const headers = {
-					Authorization: `Bearer ${proticoToken}`,
-					"Protico-Agent": "Protico-Access-Token",
-				};
+				// const headers = {
+				// 	Authorization: `Bearer ${proticoToken}`,
+				// 	"Protico-Agent": "Protico-Access-Token",
+				// };
 				const data = await fetchDataFromAPI(
-					"https://main.protico.io/api/keyphrase",
-					headers
+					"https://dev.protico.io/api/keyphrase/?domain=chinatimes.com&from_date=2025-05-22T09:49:49.559Z&to_date=2025-05-23T09:49:49.559Z",
+					// headers
 				);
 				return {
 					content: [
